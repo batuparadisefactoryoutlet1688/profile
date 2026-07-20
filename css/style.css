@@ -15,39 +15,59 @@
 
 html, body {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   background: #000;
-  overflow-x: hidden;
 }
 
-/* Stage membungkus canvas dan menengahkannya di layar */
+/* Stage membungkus canvas dan menengahkannya di layar.
+   Di desktop, canvas dibatasi max-width supaya tetap
+   tampil seperti tampilan HP (tidak melebar penuh layar). */
 #stage {
   width: 100%;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  background: #000;
 }
 
-/* Canvas = kontainer skala. Ukuran aslinya diset lewat JS
-   berdasarkan CANVAS_WIDTH x CANVAS_HEIGHT di config.js,
-   lalu di-scale via CSS transform agar tetap presisi. */
+/* Canvas mengikuti rasio asli desain (1080 : 2169).
+   Tidak pakai transform/JS resize sama sekali —
+   browser yang menghitung skala secara native lewat
+   aspect-ratio, sehingga selalu presisi di semua layar
+   dan area klik (posisi %) otomatis ikut menyesuaikan. */
 #canvas {
   position: relative;
-  transform-origin: top center;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1080 / 2169;
+  overflow: hidden;
+  isolation: isolate; /* glow/ripple tidak bocor keluar canvas */
 }
 
+/* object-fit: fill (bukan cover/contain) secara sengaja.
+   Sistem koordinat klik kita persen relatif terhadap KOTAK
+   #canvas, bukan relatif terhadap gambar. "contain" akan
+   menambah letterbox saat rasio meleset sedikit -> gambar
+   bergeser dari kotak -> area klik ikut meleset. "fill"
+   menjamin gambar selalu 1:1 dengan kotak, selaras dengan
+   prinsip #6 blueprint (satu sistem koordinat 1080x2169). */
 #background {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: fill;
   user-select: none;
   pointer-events: none;
 }
 
-/* Area klik: transparan, presisi sesuai data spreadsheet */
+/* Area klik: transparan, posisi & ukuran dalam persen (%)
+   relatif terhadap #canvas, presisi sesuai data spreadsheet */
 .click-area {
   position: absolute;
+  z-index: 10;
   cursor: pointer;
   background: transparent;
   overflow: hidden;
@@ -66,7 +86,7 @@ html, body {
 
 @keyframes ripple-anim {
   to {
-    transform: scale(2.5);
+    transform: scale(4);
     opacity: 0;
   }
 }
@@ -86,6 +106,6 @@ html, body {
     box-shadow: 0 0 0 0 rgba(64, 156, 255, 0.55);
   }
   100% {
-    box-shadow: 0 0 24px 8px rgba(64, 156, 255, 0);
+    box-shadow: 0 0 40px 10px rgba(64, 156, 255, 0);
   }
 }
