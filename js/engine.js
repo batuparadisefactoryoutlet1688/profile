@@ -3,10 +3,15 @@
  * engine.js
  * Tugas:
  * - Membaca JSON
- * - Menghitung skala gambar
- * - Membuat area klik transparan (Center Point -> Left/Top)
- * - Menangani resize layar
+ * - Membuat area klik transparan (Center Point -> %)
  * - Membuka URL
+ *
+ * Catatan: Tidak ada perhitungan skala manual via JS.
+ * #canvas menggunakan CSS aspect-ratio, dan setiap area
+ * klik diposisikan dalam persen (%) relatif terhadap
+ * CANVAS_WIDTH x CANVAS_HEIGHT di config.js. Karena persen,
+ * posisi otomatis presisi di layar berapa pun tanpa listener
+ * resize/orientationchange.
  *************************************************/
 
 const Engine = {
@@ -16,42 +21,20 @@ const Engine = {
 
   init(canvasEl) {
     this.canvasEl = canvasEl;
-    this.setCanvasBaseSize();
-    this.applyScale();
-
-    window.addEventListener("resize", () => this.applyScale());
-    window.addEventListener("orientationchange", () => this.applyScale());
   },
 
   /**
-   * Set ukuran asli canvas (sebelum di-scale) sesuai config.
-   */
-  setCanvasBaseSize() {
-    this.canvasEl.style.width = `${CONFIG.CANVAS_WIDTH}px`;
-    this.canvasEl.style.height = `${CONFIG.CANVAS_HEIGHT}px`;
-  },
-
-  /**
-   * Menghitung skala agar canvas 1080x2169 pas di lebar layar,
-   * lalu diterapkan lewat CSS transform supaya area klik
-   * tetap presisi relatif terhadap gambar.
-   */
-  applyScale() {
-    const scale = window.innerWidth / CONFIG.CANVAS_WIDTH;
-    this.canvasEl.style.transform = `scale(${scale})`;
-
-    // Samakan tinggi #stage dengan tinggi hasil scale,
-    // supaya tidak ada ruang kosong di bawah.
-    const scaledHeight = CONFIG.CANVAS_HEIGHT * scale;
-    document.getElementById("stage").style.height = `${scaledHeight}px`;
-  },
-
-  /**
-   * Mengubah data (Center Point) menjadi area klik pada canvas.
+   * Mengubah data (Center Point, satuan px desain) menjadi
+   * area klik dalam satuan persen (%) pada canvas.
+   * Dibangun via DocumentFragment supaya browser hanya
+   * melakukan satu kali reflow/render ke halaman, walaupun
+   * jumlah area klik bertambah jadi puluhan/ratusan.
    * @param {Array} links - data dari API
    */
   renderLinks(links) {
     this.links = links;
+
+    const fragment = document.createDocumentFragment();
 
     links.forEach((link) => {
       const area = document.createElement("div");
@@ -60,19 +43,22 @@ const Engine = {
       area.dataset.nama = link.nama;
       area.title = link.nama;
 
-      // Konversi Center Point -> Left/Top
-      const left = link.x - link.width / 2;
-      const top = link.y - link.height / 2;
+      // Konversi Center Point -> Left/Top (px desain)
+      const leftPx = link.x - link.width / 2;
+      const topPx = link.y - link.height / 2;
 
-      area.style.left = `${left}px`;
-      area.style.top = `${top}px`;
-      area.style.width = `${link.width}px`;
-      area.style.height = `${link.height}px`;
+      // Konversi px desain -> persen (%) terhadap canvas
+      area.style.left = `${(leftPx / CONFIG.CANVAS_WIDTH) * 100}%`;
+      area.style.top = `${(topPx / CONFIG.CANVAS_HEIGHT) * 100}%`;
+      area.style.width = `${(link.width / CONFIG.CANVAS_WIDTH) * 100}%`;
+      area.style.height = `${(link.height / CONFIG.CANVAS_HEIGHT) * 100}%`;
 
       area.addEventListener("click", (e) => this.handleClick(e, area, link));
 
-      this.canvasEl.appendChild(area);
+      fragment.appendChild(area);
     });
+
+    this.canvasEl.appendChild(fragment);
   },
 
   /**
@@ -82,7 +68,11 @@ const Engine = {
     Effect.trigger(area, e.clientX, e.clientY);
 
     window.setTimeout(() => {
-      window.open(link.url, link.target || CONFIG.DEFAULT_TARGET);
+      window.open(
+        link.url,
+        link.target || CONFIG.DEFAULT_TARGET,
+        "noopener,noreferrer"
+      );
     }, 120);
   }
 
