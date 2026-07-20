@@ -1,0 +1,91 @@
+/*************************************************
+ * PROFILE ENGINE v1.0
+ * style.css
+ * Tugas: Reset, Responsive, Layer gambar,
+ *        Layer area klik, Ripple Effect
+ * (Tidak membuat layout — layout mengikuti gambar)
+ *************************************************/
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow-x: hidden;
+}
+
+/* Stage membungkus canvas dan menengahkannya di layar */
+#stage {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Canvas = kontainer skala. Ukuran aslinya diset lewat JS
+   berdasarkan CANVAS_WIDTH x CANVAS_HEIGHT di config.js,
+   lalu di-scale via CSS transform agar tetap presisi. */
+#canvas {
+  position: relative;
+  transform-origin: top center;
+}
+
+#background {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Area klik: transparan, presisi sesuai data spreadsheet */
+.click-area {
+  position: absolute;
+  cursor: pointer;
+  background: transparent;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ripple Effect */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.55);
+  animation: ripple-anim 450ms ease-out forwards;
+}
+
+@keyframes ripple-anim {
+  to {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Blue Glow Effect */
+.glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 rgba(64, 156, 255, 0.7);
+  animation: glow-anim 450ms ease-out forwards;
+}
+
+@keyframes glow-anim {
+  0% {
+    box-shadow: 0 0 0 0 rgba(64, 156, 255, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 24px 8px rgba(64, 156, 255, 0);
+  }
+}
