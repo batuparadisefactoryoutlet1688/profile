@@ -11,7 +11,7 @@ const CONFIG = {
   CANVAS_HEIGHT: 2169,
 
   // Endpoint JSON dari Google Apps Script
-  API_URL: "https://script.google.com/macros/s/AKfycbxgfux0qxXbw6opdQVzDrzKfOJLNjNSQtHAp29Z61O5q42IrBwlcSR5ArciFLDRXBg6DA/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbyal2IHOl_Aph24Gk0-vpE387E_ZBRmjgHuwx3dzof-JGDhL5Mni-EE2PJOimuenPWI/exec",
 
   // Gambar background statis hasil export Photoshop
   BACKGROUND_IMAGE: "images/background.png",
